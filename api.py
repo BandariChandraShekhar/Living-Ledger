@@ -269,6 +269,7 @@ def send_otp_email(email, otp):
 
 # API Endpoints
 @app.get("/")
+@app.head("/")
 async def root():
     """Redirect to login page"""
     auth_path = os.path.join("static", "auth.html")
@@ -894,3 +895,4 @@ if __name__ == "__main__":
                 continue
             else:
                 raise
+
