@@ -97,10 +97,6 @@ python START.py
 
 Server will start on **http://localhost:8000**
 
-### Default Admin Credentials
-```
-Email: admin@livingledger.com
-Password: Admin@123
 ```
 ⚠️ **Change this password immediately after first login!**
 
@@ -698,21 +694,6 @@ For issues, questions, or contributions:
 
 ---
 
-## 📊 Project Statistics
-
-- **Lines of Code:** ~5,000+
-- **Files:** 15 Python files, 3 HTML files
-- **Database Tables:** 7 tables
-- **API Endpoints:** 20+ endpoints
-- **Features:** 15+ major features
-- **Documentation:** 5 guides
-
----
-
-**Made with ❤️ for The Living Ledger**
-
-⭐ Star this repo if you find it helpful!
-
 🔗 **Live Demo:** Coming soon...
 
 📧 **Official Email:** livingledger3@gmail.com (for OTP sending)
@@ -732,9 +713,7 @@ python START.py
 - **Admin Dashboard:** http://localhost:8000/admin.html
 - **Login Page:** http://localhost:8000/auth.html
 
-### Default Credentials
-- **Email:** admin@livingledger.com
-- **Password:** Admin@123
+ 
 
 ### Gmail OTP
 - **Sender:** livingledger3@gmail.com
@@ -746,8 +725,4 @@ python START.py
 - **Sample Data:** `living_ledger/sample_data.db`
 - **Tables:** 7 (users, sessions, entities, metrics, etc.)
 
----
 
-**Version:** 1.0.0  
-**Last Updated:** February 2026  
-**Status:** ✅ Production Ready
