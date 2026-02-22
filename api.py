@@ -278,12 +278,10 @@ async def root():
   auth_path = os.path.join(BASE_DIR, "static", "auth.html")
     if os.path.exists(auth_path):
         return FileResponse(auth_path)
-    
     # Fallback to pro.html if auth doesn't exist
     pro_path = os.path.join("static", "pro.html")
     if os.path.exists(pro_path):
         return FileResponse(pro_path)
-    
     return {
         "name": "The Living Ledger",
         "version": "1.0.0",
@@ -898,6 +896,7 @@ if __name__ == "__main__":
                 continue
             else:
                 raise
+
 
 
 
