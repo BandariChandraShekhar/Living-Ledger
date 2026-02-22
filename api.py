@@ -40,8 +40,10 @@ app = FastAPI(
 app.include_router(admin_router)
 
 # Mount static files
-if os.path.exists("static"):
-    app.mount("/static", StaticFiles(directory="static"), name="static")
+base_dir = os.path.dirname(os.path.abspath(__file__))
+static_dir = os.path.join(base_dir, "static")
+if os.path.exists(static_dir):
+    app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
 # CORS middleware
 app.add_middleware(
@@ -272,7 +274,8 @@ def send_otp_email(email, otp):
 @app.head("/")
 async def root():
     """Redirect to login page"""
-    auth_path = os.path.join("static", "auth.html")
+  base_dir = os.path.dirname(os.path.abspath(__file__))
+auth_path = os.path.join(base_dir, "static", "auth.html")
     if os.path.exists(auth_path):
         return FileResponse(auth_path)
     
@@ -291,7 +294,8 @@ async def root():
 @app.get("/auth.html")
 async def serve_auth():
     """Serve the authentication page"""
-    auth_path = os.path.join("static", "auth.html")
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+auth_path = os.path.join(base_dir, "static", "auth.html")
     if os.path.exists(auth_path):
         return FileResponse(auth_path)
     raise HTTPException(status_code=404, detail="Authentication page not found")
@@ -300,7 +304,8 @@ async def serve_auth():
 @app.get("/pro.html")
 async def serve_dashboard():
     """Serve the dashboard (after login)"""
-    pro_path = os.path.join("static", "pro.html")
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+pro_path = os.path.join(base_dir, "static", "pro.html")
     if os.path.exists(pro_path):
         return FileResponse(pro_path)
     raise HTTPException(status_code=404, detail="Dashboard not found")
@@ -309,7 +314,8 @@ async def serve_dashboard():
 @app.get("/admin.html")
 async def serve_admin():
     """Serve the admin dashboard"""
-    admin_path = os.path.join("static", "admin.html")
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+admin_path = os.path.join(base_dir, "static", "admin.html")
     if os.path.exists(admin_path):
         return FileResponse(admin_path)
     raise HTTPException(status_code=404, detail="Admin dashboard not found")
@@ -895,4 +901,5 @@ if __name__ == "__main__":
                 continue
             else:
                 raise
+
 
