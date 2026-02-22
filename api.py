@@ -22,6 +22,8 @@ from main import LivingLedger
 from models import DataSourceConfig, CertificationStatus
 from database import db
 from admin_endpoints import router as admin_router
+# Get base directory for file paths
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Indian Standard Time
 IST = pytz.timezone('Asia/Kolkata')
@@ -40,8 +42,7 @@ app = FastAPI(
 app.include_router(admin_router)
 
 # Mount static files
-base_dir = os.path.dirname(os.path.abspath(__file__))
-static_dir = os.path.join(base_dir, "static")
+static_dir = os.path.join(BASE_DIR, "static")
 if os.path.exists(static_dir):
     app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
@@ -274,8 +275,7 @@ def send_otp_email(email, otp):
 @app.head("/")
 async def root():
     """Redirect to login page"""
-  base_dir = os.path.dirname(os.path.abspath(__file__))
-auth_path = os.path.join(base_dir, "static", "auth.html")
+  auth_path = os.path.join(BASE_DIR, "static", "auth.html")
     if os.path.exists(auth_path):
         return FileResponse(auth_path)
     
@@ -294,8 +294,7 @@ auth_path = os.path.join(base_dir, "static", "auth.html")
 @app.get("/auth.html")
 async def serve_auth():
     """Serve the authentication page"""
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-auth_path = os.path.join(base_dir, "static", "auth.html")
+    auth_path = os.path.join(BASE_DIR, "static", "auth.html")
     if os.path.exists(auth_path):
         return FileResponse(auth_path)
     raise HTTPException(status_code=404, detail="Authentication page not found")
@@ -304,8 +303,7 @@ auth_path = os.path.join(base_dir, "static", "auth.html")
 @app.get("/pro.html")
 async def serve_dashboard():
     """Serve the dashboard (after login)"""
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-pro_path = os.path.join(base_dir, "static", "pro.html")
+    pro_path = os.path.join(BASE_DIR, "static", "pro.html")
     if os.path.exists(pro_path):
         return FileResponse(pro_path)
     raise HTTPException(status_code=404, detail="Dashboard not found")
@@ -314,8 +312,7 @@ pro_path = os.path.join(base_dir, "static", "pro.html")
 @app.get("/admin.html")
 async def serve_admin():
     """Serve the admin dashboard"""
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-admin_path = os.path.join(base_dir, "static", "admin.html")
+    admin_path = os.path.join(BASE_DIR, "static", "admin.html")
     if os.path.exists(admin_path):
         return FileResponse(admin_path)
     raise HTTPException(status_code=404, detail="Admin dashboard not found")
@@ -901,5 +898,6 @@ if __name__ == "__main__":
                 continue
             else:
                 raise
+
 
 
