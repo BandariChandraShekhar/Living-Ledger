@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - The Living Ledger</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --primary: #6366f1;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --dark: #0f172a;
+            --gray: #64748b;
+            --light: #f1f5f9;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            padding: 24px 32px;
+            border-radius: 20px;
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+        }
+        
+        .header h1 {
+            font-size: 32px;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            font-weight: 800;
+        }
+        
+        .header h1 i {
+            color: var(--primary);
+            background: rgba(99, 102, 241, 0.1);
+            padding: 12px;
+            border-radius: 12px;
+        }
+        
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .admin-info {
+            text-align: right;
+        }
+        
+        .admin-info .name {
+            font-weight: 700;
+            color: var(--dark);
+            font-size: 16px;
+        }
+        
+        .admin-info .role {
+            font-size: 13px;
+            color: var(--gray);
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+        
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+        
+        .stat-card {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            padding: 28px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--success));
+        }
+        
+        .stat-card h3 {
+            font-size: 13px;
+            color: var(--gray);
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+        
+        .stat-card .value {
+            font-size: 42px;
+            font-weight: 800;
+            color: var(--dark);
+            margin-bottom: 8px;
+        }
+        
+        .stat-card .icon {
+            position: absolute;
+            right: 24px;
+            top: 24px;
+            font-size: 40px;
+            opacity: 0.1;
+        }
+        
+        .section {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            padding: 32px;
+            border-radius: 20px;
+            margin-bottom: 24px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+        
+        .section h2 {
+            font-size: 22px;
+            color: var(--dark);
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 700;
+        }
+        
+        .section h2 i {
+            color: var(--primary);
+        }
+        
+        .table-container {
+            overflow-x: auto;
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .table th {
+            text-align: left;
+            padding: 14px 16px;
+            background: var(--light);
+            font-weight: 700;
+            color: var(--dark);
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        
+        .table td {
+            padding: 16px;
+            border-bottom: 1px solid var(--light);
+            font-size: 14px;
+        }
+        
+        .table tr:hover {
+            background: rgba(99, 102, 241, 0.05);
+        }
+        
+        .badge {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            display: inline-block;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .badge-pending {
+            background: rgba(245, 158, 11, 0.15);
+            color: #d97706;
+        }
+        
+        .badge-approved {
+            background: rgba(16, 185, 129, 0.15);
+            color: #059669;
+        }
+        
+        .badge-rejected {
+            background: rgba(239, 68, 68, 0.15);
+            color: #dc2626;
+        }
+        
+        .badge-active {
+            background: rgba(16, 185, 129, 0.15);
+            color: #059669;
+        }
+        
+        .actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 13px;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--gray);
+        }
+        
+        .empty-state i {
+            font-size: 64px;
+            margin-bottom: 20px;
+            opacity: 0.2;
+        }
+        
+        .empty-state p {
+            font-size: 16px;
+            font-weight: 500;
+        }
+        
+        .refresh-indicator {
+            font-size: 12px;
+            color: var(--gray);
+            margin-top: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>
+                <i class="fas fa-shield-alt"></i>
+                Admin Control Panel
+            </h1>
+            <div class="header-right">
+                <div class="admin-info">
+                    <div class="name" id="admin-name">Loading...</div>
+                    <div class="role">System Administrator</div>
+                </div>
+                <button class="btn btn-primary" onclick="goToDashboard()">
+                    <i class="fas fa-th-large"></i> Main Dashboard
+                </button>
+                <button class="btn btn-danger" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </div>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <i class="fas fa-users icon"></i>
+                <h3>Total Users</h3>
+                <div class="value" id="stat-total-users">0</div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-clock icon"></i>
+                <h3>Pending Approvals</h3>
+                <div class="value" id="stat-pending-users">0</div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-check-circle icon"></i>
+                <h3>Approved Users</h3>
+                <div class="value" id="stat-approved-users">0</div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-user-check icon"></i>
+                <h3>Active Sessions</h3>
+                <div class="value" id="stat-active-sessions">0</div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>
+                <i class="fas fa-user-clock"></i>
+                Pending User Approvals
+            </h2>
+            <div class="table-container" id="pending-users-container"></div>
+        </div>
+        
+        <div class="section">
+            <h2>
+                <i class="fas fa-history"></i>
+                Login/Logout Activity
+            </h2>
+            <div class="table-container" id="activity-container"></div>
+        </div>
+        
+        <div class="section">
+            <h2>
+                <i class="fas fa-users"></i>
+                All Registered Users
+            </h2>
+            <div class="table-container" id="all-users-container"></div>
+        </div>
+    </div>
+
+    
+    <script>
+        const API_BASE = window.location.origin;
+        let currentAdmin = null;
+        
+        // Format timestamp to IST
+        function formatISTTime(timestamp) {
+            if (!timestamp) return '-';
+            
+            // Parse the timestamp (assuming it's already in IST from backend)
+            const date = new Date(timestamp);
+            
+            // Format options for IST display
+            const options = {
+                year: 'numeric',
+                month: 'short',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: true,
+                timeZone: 'Asia/Kolkata'
+            };
+            
+            return date.toLocaleString('en-IN', options) + ' IST';
+        }
+        
+        window.addEventListener('DOMContentLoaded', async () => {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            
+            if (!user.user_id || !user.is_admin) {
+                alert('Access denied. Admin privileges required.');
+                window.location.href = '/auth.html';
+                return;
+            }
+            
+            currentAdmin = user;
+            document.getElementById('admin-name').textContent = `${user.first_name} ${user.last_name}`;
+            
+            await loadDashboard();
+            setInterval(loadDashboard, 10000);
+        });
+        
+        async function loadDashboard() {
+            await Promise.all([
+                loadStats(),
+                loadPendingUsers(),
+                loadActivity(),
+                loadAllUsers()
+            ]);
+        }
+        
+        async function loadStats() {
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/admin/stats`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('stat-total-users').textContent = data.stats.total_users;
+                    document.getElementById('stat-pending-users').textContent = data.stats.pending_users;
+                    document.getElementById('stat-approved-users').textContent = data.stats.approved_users;
+                    document.getElementById('stat-active-sessions').textContent = data.stats.active_sessions;
+                }
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+        
+        async function loadPendingUsers() {
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/admin/users/pending`);
+                const data = await response.json();
+                
+                const container = document.getElementById('pending-users-container');
+                
+                if (!data.success || data.users.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-check-circle"></i>
+                            <p>No pending approvals</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                container.innerHTML = `
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Company</th>
+                                <th>Employee ID</th>
+                                <th>Department</th>
+                                <th>Registered</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${data.users.map(user => `
+                                <tr>
+                                    <td><strong>${user.first_name} ${user.last_name}</strong></td>
+                                    <td>${user.email}</td>
+                                    <td>${user.company}</td>
+                                    <td>${user.employee_id || '-'}</td>
+                                    <td>${user.department || '-'}</td>
+                                    <td>${formatISTTime(user.created_at)}</td>
+                                    <td>
+                                        <div class="actions">
+                                            <button class="btn btn-success btn-sm" onclick="approveUser('${user.user_id}')">
+                                                <i class="fas fa-check"></i> Approve
+                                            </button>
+                                            <button class="btn btn-danger btn-sm" onclick="rejectUser('${user.user_id}')">
+                                                <i class="fas fa-times"></i> Reject
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            } catch (error) {
+                console.error('Error loading pending users:', error);
+            }
+        }
+        
+        async function loadActivity() {
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/admin/sessions/all`);
+                const data = await response.json();
+                
+                const container = document.getElementById('activity-container');
+                
+                if (!data.success || data.sessions.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-history"></i>
+                            <p>No activity recorded</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                container.innerHTML = `
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Email</th>
+                                <th>Company</th>
+                                <th>Employee ID</th>
+                                <th>Department</th>
+                                <th>Login Time</th>
+                                <th>Logout Time</th>
+                                <th>IP Address</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${data.sessions.map(session => `
+                                <tr>
+                                    <td><strong>${session.first_name} ${session.last_name}</strong></td>
+                                    <td>${session.email}</td>
+                                    <td>${session.company}</td>
+                                    <td>${session.employee_id || '-'}</td>
+                                    <td>${session.department || '-'}</td>
+                                    <td>${formatISTTime(session.login_time)}</td>
+                                    <td>${formatISTTime(session.logout_time)}</td>
+                                    <td>${session.ip_address || '-'}</td>
+                                    <td>
+                                        ${session.logout_time 
+                                            ? '<span class="badge badge-rejected">LOGGED OUT</span>' 
+                                            : '<span class="badge badge-active">ACTIVE</span>'}
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                    <div class="refresh-indicator">
+                        <i class="fas fa-sync-alt"></i> Auto-refreshes every 10 seconds
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Error loading activity:', error);
+            }
+        }
+        
+        async function loadAllUsers() {
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/admin/users/all`);
+                const data = await response.json();
+                
+                const container = document.getElementById('all-users-container');
+                
+                if (!data.success || data.users.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-users"></i>
+                            <p>No users registered</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                const regularUsers = data.users.filter(u => !u.is_admin);
+                
+                container.innerHTML = `
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Company</th>
+                                <th>Employee ID</th>
+                                <th>Department</th>
+                                <th>Status</th>
+                                <th>Registered</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${regularUsers.map(user => `
+                                <tr>
+                                    <td><strong>${user.first_name} ${user.last_name}</strong></td>
+                                    <td>${user.email}</td>
+                                    <td>${user.company}</td>
+                                    <td>${user.employee_id || '-'}</td>
+                                    <td>${user.department || '-'}</td>
+                                    <td><span class="badge badge-${user.status}">${user.status.toUpperCase()}</span></td>
+                                    <td>${formatISTTime(user.created_at)}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            } catch (error) {
+                console.error('Error loading all users:', error);
+            }
+        }
+        
+        async function approveUser(userId) {
+            if (!confirm('Approve this user?')) return;
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/admin/users/approve`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: userId,
+                        admin_id: currentAdmin.user_id
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('User approved successfully!');
+                    await loadDashboard();
+                } else {
+                    alert('Failed to approve user');
+                }
+            } catch (error) {
+                console.error('Error approving user:', error);
+                alert('Failed to approve user');
+            }
+        }
+        
+        async function rejectUser(userId) {
+            const reason = prompt('Reason for rejection (optional):');
+            if (reason === null) return;
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/admin/users/reject`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: userId,
+                        admin_id: currentAdmin.user_id,
+                        reason: reason || undefined
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('User rejected');
+                    await loadDashboard();
+                } else {
+                    alert('Failed to reject user');
+                }
+            } catch (error) {
+                console.error('Error rejecting user:', error);
+                alert('Failed to reject user');
+            }
+        }
+        
+        function goToDashboard() {
+            window.location.href = '/pro.html';
+        }
+        
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                const user = JSON.parse(localStorage.getItem('user') || '{}');
+                
+                fetch(`${API_BASE}/api/v1/auth/logout?user_id=${user.user_id}`, {
+                    method: 'POST'
+                }).catch(console.error);
+                
+                localStorage.removeItem('user');
+                window.location.href = '/auth.html';
+            }
+        }
+    </script>
+</body>
+</html>

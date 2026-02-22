@@ -1,0 +1,1499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Living Ledger - AI-Driven Metadata Platform</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="logo">
+                <div class="logo-icon"><i class="fas fa-database"></i></div>
+                <div class="logo-text">
+                    <h2>Living Ledger</h2>
+                    <p>AI Metadata Platform</p>
+                </div>
+            </div>
+            
+            <nav class="nav-menu">
+                <a class="nav-item active" data-view="dashboard">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a class="nav-item" data-view="entities">
+                    <i class="fas fa-table"></i>
+                    <span>Entities</span>
+                </a>
+                <a class="nav-item" data-view="certified">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Certified</span>
+                </a>
+                <a class="nav-item" data-view="alerts">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span>Alerts</span>
+                </a>
+                <a class="nav-item" data-view="search">
+                    <i class="fas fa-search"></i>
+                    <span>Search</span>
+                </a>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="user-info" id="user-info">
+                    <div class="user-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="user-details">
+                        <div class="user-name" id="user-name">Loading...</div>
+                        <div class="user-email" id="user-email"></div>
+                    </div>
+                </div>
+                <button class="btn-admin" id="admin-btn" onclick="goToAdmin()" style="display: none;">
+                    <i class="fas fa-shield-alt"></i>
+                </button>
+                <button class="btn-logout" onclick="handleLogout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div id="dashboard-view" class="view active"></div>
+            <div id="entities-view" class="view"></div>
+            <div id="certified-view" class="view"></div>
+            <div id="alerts-view" class="view"></div>
+            <div id="search-view" class="view"></div>
+        </main>
+    </div>
+
+    <div id="modal" class="modal"></div>
+</body>
+</html>
+
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+    --primary: #6366f1;
+    --primary-dark: #4f46e5;
+    --secondary: #8b5cf6;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --dark: #0f172a;
+    --dark-light: #1e293b;
+    --gray: #64748b;
+    --light: #f1f5f9;
+    --white: #ffffff;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: var(--dark);
+    overflow-x: hidden;
+}
+
+.app-container { display: flex; min-height: 100vh; }
+
+.sidebar {
+    width: 280px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    padding: 30px 20px;
+    box-shadow: 4px 0 24px rgba(0,0,0,0.1);
+    position: fixed;
+    height: 100vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 40px;
+    padding-bottom: 25px;
+    border-bottom: 2px solid var(--light);
+}
+
+.logo-icon {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: white;
+}
+
+.logo-text h2 {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--dark);
+}
+
+.logo-text p {
+    font-size: 12px;
+    color: var(--gray);
+    font-weight: 500;
+}
+
+
+.nav-menu { display: flex; flex-direction: column; gap: 8px; }
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 14px 18px;
+    border-radius: 12px;
+    color: var(--gray);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.nav-item:hover {
+    background: var(--light);
+    color: var(--primary);
+    transform: translateX(5px);
+}
+
+.nav-item.active {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: white;
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+}
+
+.nav-item i { width: 20px; text-align: center; font-size: 18px; }
+
+.sidebar-footer {
+    margin-top: auto;
+    padding-top: 20px;
+    border-top: 2px solid var(--light);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.user-info {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 18px;
+}
+
+.user-details {
+    flex: 1;
+    min-width: 0;
+}
+
+.user-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--dark);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.user-email {
+    font-size: 12px;
+    color: var(--gray);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.btn-logout {
+    width: 40px;
+    height: 40px;
+    background: var(--light);
+    border: none;
+    border-radius: 10px;
+    color: var(--gray);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+}
+
+.btn-logout:hover {
+    background: var(--danger);
+    color: white;
+}
+
+.btn-admin {
+    width: 40px;
+    height: 40px;
+    background: var(--light);
+    border: none;
+    border-radius: 10px;
+    color: var(--gray);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+}
+
+.btn-admin:hover {
+    background: var(--primary);
+    color: white;
+    transform: scale(1.05);
+}
+
+.main-content {
+    margin-left: 280px;
+    flex: 1;
+    padding: 40px;
+    width: calc(100% - 280px);
+}
+
+.view { display: none; animation: fadeIn 0.5s ease; }
+.view.active { display: block; }
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.page-header {
+    margin-bottom: 35px;
+}
+
+.page-title {
+    font-size: 36px;
+    font-weight: 800;
+    color: white;
+    margin-bottom: 8px;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.page-subtitle {
+    font-size: 16px;
+    color: rgba(255,255,255,0.9);
+    font-weight: 500;
+}
+
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 25px;
+    margin-bottom: 35px;
+}
+
+.stat-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    padding: 28px;
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 48px rgba(0,0,0,0.15);
+}
+
+.stat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.stat-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    color: white;
+}
+
+.stat-icon.primary { background: linear-gradient(135deg, var(--primary), var(--secondary)); }
+.stat-icon.success { background: linear-gradient(135deg, #10b981, #059669); }
+.stat-icon.warning { background: linear-gradient(135deg, #f59e0b, #d97706); }
+.stat-icon.danger { background: linear-gradient(135deg, #ef4444, #dc2626); }
+
+.stat-value {
+    font-size: 42px;
+    font-weight: 800;
+    color: var(--dark);
+    line-height: 1;
+    margin-bottom: 8px;
+}
+
+.stat-label {
+    color: var(--gray);
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.stat-trend {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 13px;
+    margin-top: 10px;
+}
+
+.stat-trend.up { color: var(--success); }
+.stat-trend.down { color: var(--danger); }
+
+
+.card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    margin-bottom: 25px;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.card-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--dark);
+}
+
+.btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: white;
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
+}
+
+.btn-success {
+    background: linear-gradient(135deg, var(--success), #059669);
+    color: white;
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, var(--danger), #dc2626);
+    color: white;
+}
+
+.btn-secondary {
+    background: var(--light);
+    color: var(--gray);
+}
+
+.btn-secondary:hover {
+    background: var(--gray);
+    color: white;
+}
+
+.entity-card {
+    background: white;
+    padding: 25px;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    margin-bottom: 20px;
+    transition: all 0.3s ease;
+    border-left: 4px solid var(--primary);
+}
+
+.entity-card:hover {
+    transform: translateX(5px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+}
+
+
+.entity-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    margin-bottom: 18px;
+}
+
+.entity-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--dark);
+    margin-bottom: 8px;
+}
+
+.entity-meta {
+    color: var(--gray);
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.badge {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.badge-certified {
+    background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+    color: #065f46;
+}
+
+.badge-uncertified {
+    background: linear-gradient(135deg, #fef3c7, #fde68a);
+    color: #92400e;
+}
+
+.badge-denied {
+    background: linear-gradient(135deg, #fee2e2, #fecaca);
+    color: #991b1b;
+}
+
+.entity-description {
+    color: var(--gray);
+    line-height: 1.7;
+    margin-bottom: 18px;
+}
+
+.entity-stats {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    margin-bottom: 18px;
+}
+
+.mini-stat {
+    background: var(--light);
+    padding: 10px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.mini-stat strong {
+    color: var(--primary);
+    font-weight: 700;
+}
+
+.entity-actions {
+    display: flex;
+    gap: 12px;
+    padding-top: 18px;
+    border-top: 2px solid var(--light);
+}
+
+
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(15, 23, 42, 0.7);
+    backdrop-filter: blur(5px);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal.active { display: flex; }
+
+.modal-content {
+    background: white;
+    padding: 35px;
+    border-radius: 20px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+    from { opacity: 0; transform: translateY(-50px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid var(--light);
+}
+
+.modal-title {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--dark);
+}
+
+.modal-close {
+    background: var(--light);
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    font-size: 20px;
+    cursor: pointer;
+    color: var(--gray);
+    transition: all 0.3s ease;
+}
+
+.modal-close:hover {
+    background: var(--danger);
+    color: white;
+    transform: rotate(90deg);
+}
+
+.form-group { margin-bottom: 22px; }
+
+.form-label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: 600;
+    color: var(--dark);
+    font-size: 14px;
+}
+
+.form-input, .form-textarea {
+    width: 100%;
+    padding: 14px;
+    border: 2px solid var(--light);
+    border-radius: 10px;
+    font-size: 15px;
+    font-family: inherit;
+    transition: all 0.3s ease;
+}
+
+.form-input:focus, .form-textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+}
+
+.form-textarea { min-height: 120px; resize: vertical; }
+
+.alert {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 18px 24px;
+    border-radius: 12px;
+    font-weight: 600;
+    z-index: 2000;
+    animation: slideInRight 0.3s ease;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+}
+
+@keyframes slideInRight {
+    from { opacity: 0; transform: translateX(100px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+.alert-success {
+    background: linear-gradient(135deg, var(--success), #059669);
+    color: white;
+}
+
+.alert-error {
+    background: linear-gradient(135deg, var(--danger), #dc2626);
+    color: white;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 80px 20px;
+    color: white;
+}
+
+.empty-state-icon {
+    font-size: 80px;
+    margin-bottom: 20px;
+    opacity: 0.8;
+}
+
+.empty-state h3 {
+    font-size: 24px;
+    margin-bottom: 12px;
+    font-weight: 700;
+}
+
+.empty-state p {
+    font-size: 16px;
+    opacity: 0.9;
+}
+
+.loading {
+    text-align: center;
+    padding: 60px;
+    color: white;
+}
+
+.spinner {
+    border: 4px solid rgba(255,255,255,0.3);
+    border-top: 4px solid white;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 20px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+</style>
+
+
+<script>
+const API_BASE = window.location.origin;
+let currentUser = 'user_' + Math.random().toString(36).substr(2, 9);
+let currentUserData = null;
+let stats = {};
+
+document.addEventListener('DOMContentLoaded', () => {
+    checkAuthentication();
+});
+
+function checkAuthentication() {
+    const userStr = localStorage.getItem('user');
+    if (!userStr) {
+        // Not logged in, redirect to login
+        window.location.href = '/';
+        return;
+    }
+    
+    try {
+        currentUserData = JSON.parse(userStr);
+        currentUser = currentUserData.user_id;
+        
+        // Update user info in sidebar
+        document.getElementById('user-name').textContent = 
+            `${currentUserData.first_name} ${currentUserData.last_name}`;
+        document.getElementById('user-email').textContent = currentUserData.email;
+        
+        // Show admin button if user is admin
+        if (currentUserData.is_admin) {
+            document.getElementById('admin-btn').style.display = 'flex';
+        }
+        
+        // Initialize app
+        initializeApp();
+        setupNavigation();
+    } catch (error) {
+        console.error('Invalid user data:', error);
+        localStorage.removeItem('user');
+        window.location.href = '/';
+    }
+}
+
+function goToAdmin() {
+    window.location.href = '/admin.html';
+}
+
+function handleLogout() {
+    if (confirm('Are you sure you want to logout?')) {
+        // Call logout API
+        fetch(`${API_BASE}/api/v1/auth/logout?user_id=${currentUser}`, {
+            method: 'POST'
+        }).catch(console.error);
+        
+        localStorage.removeItem('user');
+        localStorage.removeItem('rememberMe');
+        window.location.href = '/';
+    }
+}
+
+async function initializeApp() {
+    await loadStats();
+    renderDashboard();
+}
+
+function setupNavigation() {
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.addEventListener('click', (e) => {
+            e.preventDefault();
+            const view = item.dataset.view;
+            switchView(view);
+        });
+    });
+}
+
+function switchView(viewName) {
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.remove('active');
+    });
+    document.querySelector(`[data-view="${viewName}"]`).classList.add('active');
+    
+    document.querySelectorAll('.view').forEach(view => {
+        view.classList.remove('active');
+    });
+    document.getElementById(`${viewName}-view`).classList.add('active');
+    
+    switch(viewName) {
+        case 'dashboard': renderDashboard(); break;
+        case 'entities': renderEntities(); break;
+        case 'certified': renderCertified(); break;
+        case 'alerts': renderAlerts(); break;
+        case 'search': renderSearch(); break;
+    }
+}
+
+async function loadStats() {
+    try {
+        const response = await fetch(`${API_BASE}/api/v1/stats`);
+        if (!response.ok) {
+            stats = { total_entities: 0, certified: 0, uncertified: 0, active_drift_alerts: 0 };
+            return;
+        }
+        stats = await response.json();
+    } catch (error) {
+        console.error('Failed to load stats:', error);
+        stats = { total_entities: 0, certified: 0, uncertified: 0, active_drift_alerts: 0 };
+    }
+}
+
+async function getAllEntities() {
+    try {
+        const response = await fetch(`${API_BASE}/api/v1/entities`);
+        const data = await response.json();
+        return data.entities || [];
+    } catch (error) {
+        console.error('Failed to load entities:', error);
+        return [];
+    }
+}
+
+async function getCertifiedEntities() {
+    try {
+        const response = await fetch(`${API_BASE}/api/v1/entities?certified_only=true`);
+        const data = await response.json();
+        return data.entities || [];
+    } catch (error) {
+        console.error('Failed to load certified entities:', error);
+        return [];
+    }
+}
+
+async function certifyEntity(entityId, notes = '') {
+    try {
+        const response = await fetch(`${API_BASE}/api/v1/certify`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                entity_id: entityId,
+                user_id: currentUser,
+                notes: notes
+            })
+        });
+        return await response.json();
+    } catch (error) {
+        console.error('Certification failed:', error);
+        return { success: false };
+    }
+}
+
+async function denyEntity(entityId, notes = '') {
+    try {
+        const response = await fetch(`${API_BASE}/api/v1/deny`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                entity_id: entityId,
+                user_id: currentUser,
+                notes: notes
+            })
+        });
+        return await response.json();
+    } catch (error) {
+        console.error('Denial failed:', error);
+        return { success: false };
+    }
+}
+
+async function uncertifyEntity(entityId, notes = '') {
+    try {
+        const response = await fetch(`${API_BASE}/api/v1/uncertify`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                entity_id: entityId,
+                user_id: currentUser,
+                notes: notes
+            })
+        });
+        return await response.json();
+    } catch (error) {
+        console.error('Uncertification failed:', error);
+        return { success: false };
+    }
+}
+
+
+function renderDashboard() {
+    const view = document.getElementById('dashboard-view');
+    const certificationRate = stats.total_entities > 0 
+        ? ((stats.certified / stats.total_entities) * 100).toFixed(1) 
+        : 0;
+    
+    view.innerHTML = `
+        <div class="page-header">
+            <h1 class="page-title">Dashboard Overview</h1>
+            <p class="page-subtitle">Real-time metadata observability and insights</p>
+        </div>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon primary">
+                        <i class="fas fa-database"></i>
+                    </div>
+                </div>
+                <div class="stat-value">${stats.total_entities || 0}</div>
+                <div class="stat-label">Total Entities</div>
+                <div class="stat-trend up">
+                    <i class="fas fa-arrow-up"></i> Active
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon success">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                </div>
+                <div class="stat-value">${stats.certified || 0}</div>
+                <div class="stat-label">Certified</div>
+                <div class="stat-trend up">
+                    <i class="fas fa-arrow-up"></i> ${certificationRate}% Rate
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon warning">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                </div>
+                <div class="stat-value">${stats.uncertified || 0}</div>
+                <div class="stat-label">Pending Review</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon danger">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                </div>
+                <div class="stat-value">${stats.active_drift_alerts || 0}</div>
+                <div class="stat-label">Active Alerts</div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Platform Insights</h3>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px;">
+                <div style="padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 16px; color: white;">
+                    <i class="fas fa-robot" style="font-size: 32px; margin-bottom: 15px; opacity: 0.9;"></i>
+                    <h4 style="font-size: 18px; font-weight: 700; margin-bottom: 8px;">AI-Powered</h4>
+                    <p style="opacity: 0.95; line-height: 1.6;">Automatic metadata enrichment using advanced LLM technology</p>
+                </div>
+                <div style="padding: 20px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); border-radius: 16px; color: white;">
+                    <i class="fas fa-shield-alt" style="font-size: 32px; margin-bottom: 15px; opacity: 0.9;"></i>
+                    <h4 style="font-size: 18px; font-weight: 700; margin-bottom: 8px;">Privacy-First</h4>
+                    <p style="opacity: 0.95; line-height: 1.6;">Statistical analysis without storing sensitive PII data</p>
+                </div>
+                <div style="padding: 20px; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); border-radius: 16px; color: white;">
+                    <i class="fas fa-chart-line" style="font-size: 32px; margin-bottom: 15px; opacity: 0.9;"></i>
+                    <h4 style="font-size: 18px; font-weight: 700; margin-bottom: 8px;">Real-Time Drift</h4>
+                    <p style="opacity: 0.95; line-height: 1.6;">Proactive quality monitoring with entropy detection</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Quick Actions</h3>
+            </div>
+            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                <button class="btn btn-primary" onclick="switchView('entities')">
+                    <i class="fas fa-table"></i> View All Entities
+                </button>
+                <button class="btn btn-success" onclick="switchView('certified')">
+                    <i class="fas fa-check-circle"></i> Certified Entities
+                </button>
+                <button class="btn btn-danger" onclick="switchView('alerts')">
+                    <i class="fas fa-exclamation-triangle"></i> View Alerts
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+
+async function renderEntities() {
+    const view = document.getElementById('entities-view');
+    view.innerHTML = `
+        <div class="page-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h1 class="page-title">All Entities</h1>
+                <p class="page-subtitle">Review and manage metadata entities</p>
+            </div>
+            <button class="btn btn-primary" onclick="showCreateEntityModal()">
+                <i class="fas fa-plus"></i> Create Entity
+            </button>
+        </div>
+        <div class="loading"><div class="spinner"></div>Loading entities...</div>
+    `;
+    
+    const entities = await getAllEntities();
+    
+    if (entities.length === 0) {
+        view.innerHTML = `
+            <div class="page-header" style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h1 class="page-title">All Entities</h1>
+                    <p class="page-subtitle">Review and manage metadata entities</p>
+                </div>
+                <button class="btn btn-primary" onclick="showCreateEntityModal()">
+                    <i class="fas fa-plus"></i> Create Entity
+                </button>
+            </div>
+            <div class="empty-state">
+                <div class="empty-state-icon"><i class="fas fa-database"></i></div>
+                <h3>No Entities Found</h3>
+                <p>Process a database or create entities manually</p>
+                <div style="display: flex; gap: 15px; justify-content: center; margin-top: 25px;">
+                    <button class="btn btn-primary" onclick="showProcessModal()">
+                        <i class="fas fa-cog"></i> Process Database
+                    </button>
+                </div>
+            </div>
+        `;
+        return;
+    }
+    
+    view.innerHTML = `
+        <div class="page-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h1 class="page-title">All Entities (${entities.length})</h1>
+                <p class="page-subtitle">Review and manage metadata entities</p>
+            </div>
+            <button class="btn btn-primary" onclick="showCreateEntityModal()">
+                <i class="fas fa-plus"></i> Create Entity
+            </button>
+        </div>
+        ${entities.map(entity => renderEntityCard(entity, true)).join('')}
+    `;
+}
+
+function renderEntityCard(entity, showActions = true) {
+    const isCertified = entity.certification_status === 'certified';
+    const isDenied = entity.certification_status === 'denied';
+    const badgeClass = isCertified ? 'badge-certified' : (isDenied ? 'badge-denied' : 'badge-uncertified');
+    const badgeIcon = isCertified ? 'fa-check-circle' : (isDenied ? 'fa-times-circle' : 'fa-clock');
+    const badgeText = isCertified ? 'Certified' : (isDenied ? 'Denied' : 'Pending');
+    
+    const businessName = entity.business_name || 'Unknown';
+    const tableName = entity.table_name || 'unknown';
+    const columnName = entity.column_name || 'unknown';
+    const dataType = entity.data_type || 'unknown';
+    const businessDomain = entity.business_domain || 'General';
+    const description = entity.description || 'No description available';
+    const confidenceScore = entity.confidence_score || 0;
+    const exampleValues = entity.example_values || [];
+    const usageGuidelines = entity.usage_guidelines || 'No guidelines available';
+    
+    const stats = entity.statistics || {};
+    const distinctCount = stats.distinct_count || 0;
+    const nullPercentage = stats.null_percentage || 0;
+    const entropy = stats.entropy || 0;
+    const distributionType = stats.distribution_type || 'unknown';
+    
+    return `
+        <div class="entity-card">
+            <div class="entity-header">
+                <div>
+                    <div class="entity-title">${businessName}</div>
+                    <div class="entity-meta">
+                        <i class="fas fa-table"></i>
+                        ${tableName}.${columnName} • ${dataType} • ${businessDomain}
+                    </div>
+                </div>
+                <span class="badge ${badgeClass}">
+                    <i class="fas ${badgeIcon}"></i> ${badgeText}
+                </span>
+            </div>
+            
+            <div class="entity-description">${description}</div>
+            
+            <div class="entity-stats">
+                <div class="mini-stat"><strong>Confidence:</strong> ${(confidenceScore * 100).toFixed(0)}%</div>
+                <div class="mini-stat"><strong>Distinct:</strong> ${distinctCount}</div>
+                <div class="mini-stat"><strong>Null:</strong> ${nullPercentage.toFixed(1)}%</div>
+                <div class="mini-stat"><strong>Entropy:</strong> ${entropy.toFixed(2)}</div>
+                <div class="mini-stat"><strong>Distribution:</strong> ${distributionType}</div>
+            </div>
+            
+            <div style="margin-top: 12px; font-size: 14px; color: var(--gray);">
+                <strong>Examples:</strong> ${exampleValues.length > 0 ? exampleValues.join(', ') : 'No examples'}
+            </div>
+            
+            <div style="margin-top: 8px; font-size: 14px; color: var(--gray);">
+                <strong>Usage:</strong> ${usageGuidelines}
+            </div>
+            
+            ${showActions ? `
+                <div class="entity-actions">
+                    ${!isCertified && !isDenied ? `
+                        <button class="btn btn-success" onclick="handleCertify('${entity.entity_id}', '${businessName.replace(/'/g, "\\'")}')">
+                            <i class="fas fa-check"></i> Certify
+                        </button>
+                        <button class="btn btn-danger" onclick="handleDeny('${entity.entity_id}', '${businessName.replace(/'/g, "\\'")}')">
+                            <i class="fas fa-times"></i> Deny
+                        </button>
+                    ` : isCertified ? `
+                        <button class="btn btn-secondary" onclick="handleUncertify('${entity.entity_id}', '${businessName.replace(/'/g, "\\'")}')">
+                            <i class="fas fa-undo"></i> Uncertify
+                        </button>
+                    ` : `
+                        <button class="btn btn-secondary" onclick="handleUncertify('${entity.entity_id}', '${businessName.replace(/'/g, "\\'")}')">
+                            <i class="fas fa-undo"></i> Undo Denial
+                        </button>
+                    `}
+                </div>
+            ` : ''}
+        </div>
+    `;
+}
+
+
+async function handleCertify(entityId, businessName) {
+    showModal('Certify Entity', `
+        <p style="margin-bottom: 20px;">You are certifying: <strong>${businessName}</strong></p>
+        <div class="form-group">
+            <label class="form-label">Notes (Optional)</label>
+            <textarea class="form-textarea" id="modal-notes" placeholder="Why are you certifying this entity?"></textarea>
+        </div>
+        <div style="display: flex; gap: 12px;">
+            <button class="btn btn-success" onclick="confirmCertify('${entityId}')">
+                <i class="fas fa-check"></i> Certify
+            </button>
+            <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+        </div>
+    `);
+}
+
+async function confirmCertify(entityId) {
+    const notes = document.getElementById('modal-notes').value;
+    const result = await certifyEntity(entityId, notes);
+    
+    if (result.success) {
+        closeModal();
+        showAlert('success', 'Entity certified successfully!');
+        await loadStats();
+        const activeView = document.querySelector('.nav-item.active').dataset.view;
+        switchView(activeView);
+    } else {
+        showAlert('error', 'Failed to certify entity');
+    }
+}
+
+async function handleDeny(entityId, businessName) {
+    showModal('Deny Entity', `
+        <p style="margin-bottom: 20px;">You are denying: <strong>${businessName}</strong></p>
+        <div class="form-group">
+            <label class="form-label">Reason (Required)</label>
+            <textarea class="form-textarea" id="modal-notes" placeholder="Why are you denying this entity?" required></textarea>
+        </div>
+        <div style="display: flex; gap: 12px;">
+            <button class="btn btn-danger" onclick="confirmDeny('${entityId}')">
+                <i class="fas fa-times"></i> Deny
+            </button>
+            <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+        </div>
+    `);
+}
+
+async function confirmDeny(entityId) {
+    const notes = document.getElementById('modal-notes').value;
+    if (!notes.trim()) {
+        showAlert('error', 'Please provide a reason for denial');
+        return;
+    }
+    
+    const result = await denyEntity(entityId, notes);
+    
+    if (result.success) {
+        closeModal();
+        showAlert('success', 'Entity denied successfully!');
+        await loadStats();
+        const activeView = document.querySelector('.nav-item.active').dataset.view;
+        switchView(activeView);
+    } else {
+        showAlert('error', 'Failed to deny entity');
+    }
+}
+
+async function handleUncertify(entityId, businessName) {
+    if (!confirm(`Are you sure you want to reset the status of "${businessName}"?`)) {
+        return;
+    }
+    
+    const result = await uncertifyEntity(entityId);
+    
+    if (result.success) {
+        showAlert('success', 'Entity status reset successfully!');
+        await loadStats();
+        const activeView = document.querySelector('.nav-item.active').dataset.view;
+        switchView(activeView);
+    } else {
+        showAlert('error', 'Failed to reset entity status');
+    }
+}
+
+async function renderCertified() {
+    const view = document.getElementById('certified-view');
+    view.innerHTML = `
+        <div class="page-header">
+            <h1 class="page-title">Certified Entities</h1>
+            <p class="page-subtitle">Verified and approved metadata</p>
+        </div>
+        <div class="loading"><div class="spinner"></div>Loading...</div>
+    `;
+    
+    const entities = await getCertifiedEntities();
+    
+    if (entities.length === 0) {
+        view.innerHTML = `
+            <div class="page-header">
+                <h1 class="page-title">Certified Entities</h1>
+                <p class="page-subtitle">Verified and approved metadata</p>
+            </div>
+            <div class="empty-state">
+                <div class="empty-state-icon"><i class="fas fa-check-circle"></i></div>
+                <h3>No Certified Entities</h3>
+                <p>Certify entities to see them here</p>
+            </div>
+        `;
+        return;
+    }
+    
+    view.innerHTML = `
+        <div class="page-header">
+            <h1 class="page-title">Certified Entities (${entities.length})</h1>
+            <p class="page-subtitle">Verified and approved metadata</p>
+        </div>
+        ${entities.map(entity => renderEntityCard(entity, true)).join('')}
+    `;
+}
+
+function renderAlerts() {
+    const view = document.getElementById('alerts-view');
+    view.innerHTML = `
+        <div class="page-header">
+            <h1 class="page-title">Active Alerts</h1>
+            <p class="page-subtitle">Data drift and quality monitoring</p>
+        </div>
+        <div class="empty-state">
+            <div class="empty-state-icon"><i class="fas fa-check-circle"></i></div>
+            <h3>No Active Alerts</h3>
+            <p>All clear! No drift detected in your data.</p>
+        </div>
+    `;
+}
+
+function renderSearch() {
+    const view = document.getElementById('search-view');
+    view.innerHTML = `
+        <div class="page-header">
+            <h1 class="page-title">Search Metadata</h1>
+            <p class="page-subtitle">Find entities using natural language</p>
+        </div>
+        <div class="card">
+            <div style="display: flex; gap: 12px;">
+                <input type="text" id="search-input" class="form-input" placeholder="e.g., 'customer email', 'order amount', 'product price'" style="flex: 1;" />
+                <button class="btn btn-primary" onclick="performSearch()">
+                    <i class="fas fa-search"></i> Search
+                </button>
+            </div>
+        </div>
+        <div id="search-results"></div>
+    `;
+    
+    document.getElementById('search-input').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') performSearch();
+    });
+}
+
+async function performSearch() {
+    const query = document.getElementById('search-input').value;
+    if (!query) return;
+    
+    const resultsDiv = document.getElementById('search-results');
+    resultsDiv.innerHTML = '<div class="loading"><div class="spinner"></div>Searching...</div>';
+    
+    try {
+        const response = await fetch(`${API_BASE}/api/v1/search`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ query, limit: 50 })
+        });
+        const data = await response.json();
+        
+        if (data.results.length === 0) {
+            resultsDiv.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon"><i class="fas fa-search"></i></div>
+                    <h3>No Results Found</h3>
+                    <p>Try a different search query</p>
+                </div>
+            `;
+            return;
+        }
+        
+        resultsDiv.innerHTML = data.results.map(entity => renderEntityCard(entity, true)).join('');
+    } catch (error) {
+        resultsDiv.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-state-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                <h3>Search Failed</h3>
+                <p>Please try again</p>
+            </div>
+        `;
+    }
+}
+
+function showCreateEntityModal() {
+    showModal('Create New Entity', `
+        <div class="form-group">
+            <label class="form-label">Table Name</label>
+            <input type="text" class="form-input" id="create-table" placeholder="e.g., customers" />
+        </div>
+        <div class="form-group">
+            <label class="form-label">Column Name</label>
+            <input type="text" class="form-input" id="create-column" placeholder="e.g., email_address" />
+        </div>
+        <div class="form-group">
+            <label class="form-label">Data Type</label>
+            <input type="text" class="form-input" id="create-datatype" placeholder="e.g., VARCHAR, INTEGER" />
+        </div>
+        <div class="form-group">
+            <label class="form-label">Business Name</label>
+            <input type="text" class="form-input" id="create-business-name" placeholder="e.g., Customer Email" />
+        </div>
+        <div class="form-group">
+            <label class="form-label">Description</label>
+            <textarea class="form-textarea" id="create-description" placeholder="Describe what this entity represents..."></textarea>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Business Domain</label>
+            <input type="text" class="form-input" id="create-domain" placeholder="e.g., Customer, Sales, Product" />
+        </div>
+        <div style="display: flex; gap: 12px;">
+            <button class="btn btn-success" onclick="confirmCreateEntity()">
+                <i class="fas fa-plus"></i> Create Entity
+            </button>
+            <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+        </div>
+    `);
+}
+
+async function confirmCreateEntity() {
+    const entityData = {
+        table_name: document.getElementById('create-table').value,
+        column_name: document.getElementById('create-column').value,
+        data_type: document.getElementById('create-datatype').value,
+        business_name: document.getElementById('create-business-name').value,
+        description: document.getElementById('create-description').value,
+        business_domain: document.getElementById('create-domain').value,
+        nullable: true
+    };
+    
+    if (!entityData.table_name || !entityData.column_name || !entityData.data_type || 
+        !entityData.business_name || !entityData.description) {
+        showAlert('error', 'Please fill in all required fields');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`${API_BASE}/api/v1/entities`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(entityData)
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+            showAlert('error', data.detail || 'Failed to create entity');
+            return;
+        }
+        
+        closeModal();
+        showAlert('success', 'Entity created successfully!');
+        await loadStats();
+        renderEntities();
+    } catch (error) {
+        showAlert('error', 'Network error: ' + error.message);
+    }
+}
+
+function showProcessModal() {
+    showModal('Process Database', `
+        <p style="margin-bottom: 20px;">This will analyze the sample database and create metadata entities for all tables and columns.</p>
+        <div class="form-group">
+            <label class="form-label">Database File</label>
+            <input type="text" class="form-input" id="process-db" value="sample_data.db" />
+        </div>
+        <div style="display: flex; gap: 12px;">
+            <button class="btn btn-primary" onclick="confirmProcessDatabase()">
+                <i class="fas fa-cog"></i> Start Processing
+            </button>
+            <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+        </div>
+    `);
+}
+
+async function confirmProcessDatabase() {
+    const dbFile = document.getElementById('process-db').value;
+    
+    try {
+        showAlert('success', 'Processing database... This may take a moment.');
+        
+        const response = await fetch(`${API_BASE}/api/v1/process`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                connection_string: dbFile,
+                source_type: 'sqlite',
+                sampling_rate: 0.1,
+                max_sample_size: 10000
+            })
+        });
+        
+        const result = await response.json();
+        
+        closeModal();
+        showAlert('success', `Processing complete! Created: ${result.entities_created}, Updated: ${result.entities_updated}`);
+        await loadStats();
+        renderEntities();
+    } catch (error) {
+        closeModal();
+        showAlert('error', 'Failed to process database: ' + error.message);
+    }
+}
+
+function showModal(title, content) {
+    const modal = document.getElementById('modal');
+    modal.innerHTML = `
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">${title}</h2>
+                <button class="modal-close" onclick="closeModal()">×</button>
+            </div>
+            ${content}
+        </div>
+    `;
+    modal.classList.add('active');
+}
+
+function closeModal() {
+    document.getElementById('modal').classList.remove('active');
+}
+
+function showAlert(type, message) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type}`;
+    alertDiv.innerHTML = `
+        <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+        ${message}
+    `;
+    
+    document.body.appendChild(alertDiv);
+    
+    setTimeout(() => {
+        alertDiv.remove();
+    }, 3000);
+}
+
+document.getElementById('modal').addEventListener('click', (e) => {
+    if (e.target.id === 'modal') {
+        closeModal();
+    }
+});
+</script>
