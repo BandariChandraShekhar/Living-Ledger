@@ -1,9 +1,0 @@
-services:
-  - type: web
-    name: living-ledger
-    env: python
-    buildCommand: "cd living_ledger && pip install -r requirements.txt"
-    startCommand: "cd living_ledger && uvicorn api:app --host 0.0.0.0 --port $PORT"
-    envVars:
-      - key: PYTHON_VERSION
-        value: 3.12.0
