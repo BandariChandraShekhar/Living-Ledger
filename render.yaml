@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: living-ledger
+    env: python
+    region: oregon
+    plan: free
+    branch: main
+    buildCommand: "cd living_ledger && pip install -r requirements.txt"
+    startCommand: "cd living_ledger && uvicorn api:app --host 0.0.0.0 --port $PORT"
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.0"
+      - key: GMAIL_USER
+        value: livingledger3@gmail.com
+      - key: GMAIL_APP_PASSWORD
+        sync: false
