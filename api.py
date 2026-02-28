@@ -275,18 +275,15 @@ def send_otp_email(email, otp):
 @app.head("/")
 async def root():
     """Redirect to login page"""
-  auth_path = os.path.join(BASE_DIR, "static", "auth.html")
+    auth_path = os.path.join(BASE_DIR, "static", "auth.html")
     if os.path.exists(auth_path):
         return FileResponse(auth_path)
-    # Fallback to pro.html if auth doesn't exist
-    pro_path = os.path.join("static", "pro.html")
-    if os.path.exists(pro_path):
-        return FileResponse(pro_path)
     return {
         "name": "The Living Ledger",
         "version": "1.0.0",
         "description": "Autonomous AI-Driven Metadata Observability Platform"
     }
+
 
 
 @app.get("/auth.html")
